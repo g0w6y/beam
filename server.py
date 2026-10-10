@@ -15,6 +15,7 @@ Nothing outside the standard library is needed.
 import argparse
 import atexit
 import errno
+import gzip
 import hashlib
 import hmac
 import http.server
@@ -40,6 +41,12 @@ import ui  # noqa: E402
 CHUNK = 1 << 20           # 1 MiB - the unit for every disk/socket copy
 SENDFILE_CHUNK = 1 << 24  # 16 MiB per sendfile call - fewer syscalls per GB on a fast link
 HAVE_SENDFILE = hasattr(os, "sendfile")
+# Text shrinks a lot under gzip (a folder of a few hundred files' JSON listing
+# easily halves or more); media and binaries served through send() (thumbnail
+# PNGs, the QR) are already compressed, so only text types are worth the CPU.
+COMPRESSIBLE = {"text/html", "application/json", "text/plain",
+                 "text/css", "text/javascript", "application/javascript"}
+GZIP_MIN = 512            # below this, gzip's own overhead can lose
 SESSIONS = {}             # cookie token -> expiry epoch, handed out after a PIN
 ATTEMPTS = {}             # ip -> [failed count, locked-until timestamp]
 SHARES = {}               # share token -> a read-only, scoped guest link
@@ -476,10 +483,18 @@ class Beam(http.server.BaseHTTPRequestHandler):
     def send(self, code, body=b"", ctype="text/plain; charset=utf-8", extra=()):
         if isinstance(body, str):
             body = body.encode("utf-8")
+        headers = list(extra)
+        base_type = ctype.split(";", 1)[0].strip()
+        if (len(body) >= GZIP_MIN and base_type in COMPRESSIBLE
+                and "gzip" in self.headers.get("Accept-Encoding", "")):
+            packed = gzip.compress(body, compresslevel=6)
+            if len(packed) < len(body):
+                body = packed
+                headers.append(("Content-Encoding", "gzip"))
         self.send_response(code)
         self.send_header("Content-Type", ctype)
         self.send_header("Content-Length", str(len(body)))
-        for k, v in extra:
+        for k, v in headers:
             self.send_header(k, v)
         self.end_headers()
         if self.command != "HEAD":
