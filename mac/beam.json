@@ -1,0 +1,14 @@
+{
+  "name": "Beam",
+  "bundleId": "com.g0w6y.beam",
+  "version": "1.1",
+  "projectDir": "~/beam",
+  "serverScript": "server.py",
+  "port": 8080,
+  "healthPath": "",
+  "env": {
+    "BEAM_TRUST_LOOPBACK": "1"
+  },
+  "windowWidth": 1180,
+  "windowHeight": 820
+}

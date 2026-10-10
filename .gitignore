@@ -1,0 +1,65 @@
+# --- Python ---
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.mypy_cache/
+.pytest_cache/
+
+# --- runtime state (never belongs in the repo) ---
+beam.log
+*.log
+~/.beam/
+
+# --- the folder Beam actually shares, if it ever ends up inside the repo ---
+/Drop/
+
+# --- Android build output (this repo builds without Gradle; keep it that way) ---
+android/build/
+*.idsig
+*.dex
+*.class
+*.ap_
+
+# --- Android Studio / Gradle, in case someone opens this there anyway ---
+.gradle/
+.idea/
+*.iml
+local.properties
+captures/
+.cxx/
+
+# --- signing material: never commit a real keystore ---
+*.keystore
+*.jks
+!debug.keystore
+
+# --- Mac / Swift build output ---
+mac/build/
+*.dSYM/
+.build/
+.swiftpm/
+
+# --- Xcode, in case this ever gains a project file ---
+*.xcodeproj/
+*.xcworkspace/
+xcuserdata/
+
+# --- editors ---
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# --- OS cruft ---
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+Desktop.ini
+
+# --- anything a transfer test or a real run might drop here ---
+beam-test-*/
+beam-state-*/
+*.part
